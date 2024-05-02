@@ -72,6 +72,9 @@ in stdenv.mkDerivation {
         otool -L $f
     done
     for f in $out/lib/*.dylib; do
+      if otool -L $f | grep "@rpath/libomp.dylib" >& /dev/null; then
+        install_name_tool -change "@rpath/libomp.dylib" ${llvmPackages.openmp}/lib/libomp.dylib $f
+      fi
       install_name_tool -id $out/lib/$(basename $f) $f || true
       for rpath in $(otool -L $f | grep rpath | awk '{print $1}');do
         install_name_tool -change $rpath $out/lib/$(basename $rpath) $f
